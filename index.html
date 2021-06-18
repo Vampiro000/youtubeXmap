@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="leaflet/leaflet.css" />
+	<link rel="stylesheet" href="layout.css" />
+	<script src="leaflet/leaflet.js"></script>
+	<script src="https://apis.google.com/js/api.js"></script>
+	<!-- CSS only -->
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
+		integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+	<!-- JavaScript Bundle with Popper -->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+		integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+		crossorigin="anonymous"></script>
+	<title>Carte YouTube</title>
+	<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+
+<body onload="loadClient().then(execute);">
+	<h1>Carte des vidéos YouTube</h1>
+	<p>Choisissez un lieu sur la carte pour afficher les 5 vidéos
+		les plus populaires postées dans un rayon de 10km.</p>
+
+	<div style="display: flex;flex-direction: row;    height: 450px;">
+		<div id="mapid"></div>
+		<div>
+			<div id="app" style=" padding-left: 15px;
+			padding-top: 23px;">
+				<v-app style="display: contents;  padding-left: 15px;
+				padding-top: 23px;">
+					<v-main>
+						<v-card elevation=" 2" style="width: 400px;">
+
+							<v-card-title>
+								Filters
+							</v-card-title>
+							<v-slider v-model="ex3.val" :label="ex3.label" :thumb-color="ex3.color" thumb-label="always"
+								v-on:change="rayon()">
+							</v-slider>
+							<div style="display: flex;flex-direction: row; margin: 5px;">
+								<v-text-field v-model="lat" label="Set Latitude" type="number" style="margin: 5px;"
+									v-on:change="updateLatLong()">
+
+								</v-text-field>
+								<v-text-field v-model="long" label="Set Longitudes" type="number" style="margin: 5px;"
+									v-on:change="updateLatLong()">
+
+								</v-text-field>
+
+							</div>
+							<v-btn style="margin: 5px;;" @click="refreshLongLat()">Refresh</v-btn>
+							<v-btn style="margin: 5px;;" @click="removeCircles()" color="warning">Remove ALL</v-btn>
+						</v-card>
+
+					</v-main>
+				</v-app>
+			</div>
+		</div>
+	</div>
+	<div id="res"></div>
+	<script src="map.js"></script>
+	<script src="access_youtube.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+	<script>
+		new Vue({
+			el: '#app',
+			data() {
+				return {
+					lat: defaultLocation[0],
+					long: defaultLocation[1],
+					ex3: { label: 'Rayon', val: 10, color: 'red' },
+				}
+			},
+			mounted: () => {
+				console.log("CIrlcle", circle)
+			},
+			methods: {
+				refreshLongLat() {
+					marker
+						.setLatLng([this.lat, this.long])
+						.addTo(mymap);
+					circle
+						.setLatLng([this.lat, this.long])
+						.addTo(mymap);
+					// clickedLat = e.latlng.lat;
+					// clickedLong = e.latlng.lng;
+				},
+				removeCircles() {
+					mymap.eachLayer(function (layer) {
+						if (index !== 0) mymap.removeLayer(layer)
+						console.log(index++, layer);
+					}, index = 0);
+
+				},
+				rayon() {
+					console.log("RayonCalled", this.data)
+					circle = {}
+					circle = L.circle(defaultLocation, {
+						color: 'red',
+						fillColor: '#f03',
+						fillOpacity: 0.5,
+						radius: this.ex3.val * 1000
+					}).addTo(mymap);
+					// marker
+					// 	.setLatLng(e.latlng)
+					// 	.addTo(mymap);
+					// circle
+					// 	.setLatLng(e.latlng)
+					// 	.addTo(mymap);
+					// clickedLat = e.latlng.lat;
+					// clickedLong = e.latlng.lng;
+
+					// api search
+					loadClient().then(execute);
+				},
+				updateLatLong() {
+					defaultLocation = [this.lat, this.long]
+				}
+
+
+			},
+			vuetify: new Vuetify(),
+		})
+	</script>
+</body>
+
+</html>
